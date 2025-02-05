@@ -186,9 +186,21 @@ function manageOptions(tags, message) {
       return;
     }
   }
-  else {
-    new TTS(message, tags); 
-    return;
+
+//SERSH EDITS
+if (message.startsWith('!')) {
+    return; // Ignore messages that start with '!'
+}
+
+else{
+let words = message.split(/\s+/); // Split message into words
+let filteredWords = words.filter(word => !/^https?:\/\//i.test(word)); // Remove words that are links
+let cleanMessage = filteredWords.join(' '); // Reconstruct the message
+if (cleanMessage.trim().length === 0) {
+    return; // Don't log the message if it only contains a link
+}
+new TTS(cleanMessage, tags);
+return;
   }
 }
 
@@ -280,6 +292,3 @@ function fillInBots() {
   var excludedChatters = document.getElementById("excluded-chatters");
   excludedChatters.value = "Nightbot\nMoobot\nStreamElements\nStreamlabs\nFossabot";
 }
-
-
-
