@@ -164,6 +164,9 @@ function manageOptions(tags, message) {
   const badges = tags.badges || {};
   const isBroadcaster = badges.broadcaster;
   const isMod = badges.moderator;
+  let words = message.split(/\s+/); // Split message into words
+  let filteredWords = words.filter(word => !/^https?:\/\//i.test(word)); // Remove words that are links
+  let cleanMessage = filteredWords.join(' '); // Reconstruct the message
 
   const excludedchatterstextarea = document.getElementById('excluded-chatters');
   var lines = excludedchatterstextarea.value.split('\n');
@@ -171,7 +174,17 @@ function manageOptions(tags, message) {
 
   if(document.getElementById('modsonly').checked) {
     if(isBroadcaster || isMod ) {
-      new TTS(message, tags);
+      if (message.startsWith('!')) {
+    return; // Ignore messages that start with '!'
+}
+
+	else{
+	if (cleanMessage.trim().length === 0) {
+		return; // Don't log the message if it only contains a link
+	}
+	new TTS(cleanMessage, tags);
+	return;
+  }
       return;
     }
   }
@@ -181,28 +194,34 @@ function manageOptions(tags, message) {
       return;
     }
     else {
-      new TTS(message, tags);
+      if (message.startsWith('!')) {
+    return; // Ignore messages that start with '!'
+}
+
+	else{
+	if (cleanMessage.trim().length === 0) {
+		return; // Don't log the message if it only contains a link
+	}
+	new TTS(cleanMessage, tags);
+	return;
+  }
       console.log('not in lines');
       return;
     }
   }
-
 //SERSH EDITS
 if (message.startsWith('!')) {
     return; // Ignore messages that start with '!'
 }
 
 else{
-let words = message.split(/\s+/); // Split message into words
-let filteredWords = words.filter(word => !/^https?:\/\//i.test(word)); // Remove words that are links
-let cleanMessage = filteredWords.join(' '); // Reconstruct the message
 if (cleanMessage.trim().length === 0) {
     return; // Don't log the message if it only contains a link
 }
 new TTS(cleanMessage, tags);
 return;
   }
-}
+ }
 
 
 /*
