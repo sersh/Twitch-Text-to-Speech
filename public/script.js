@@ -1,63 +1,59 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const voiceSelect = document.getElementById("voiceSelect");
-
-  // Function to populate the voices dropdown
-  function populateVoiceList() {
-    if (typeof speechSynthesis === "undefined") {
-      console.warn("Speech Synthesis is not supported.");
-      return;
-    }
-
-    // Get the available voices
-    const voices = speechSynthesis.getVoices();
-
-    // Clear existing options
-    voiceSelect.innerHTML = '';
-
-    // Populate the dropdown with voices
-    voices.forEach(function (voice) {
-      const option = document.createElement("option");
-      option.textContent = `${voice.name} (${voice.lang})`; // Display name and language
-      option.setAttribute("data-lang", voice.lang);
-      option.setAttribute("data-name", voice.name);
-      voiceSelect.appendChild(option);
-    });
-
-    // Restore selected voice after voices are populated
-    restoreSelectedVoice(voices);
+function populateVoiceList() {
+  if (typeof speechSynthesis === "undefined") {
+    return;
   }
 
-  // Function to restore the previously selected voice
-  function restoreSelectedVoice(voices) {
-    const savedVoice = localStorage.getItem("selectedVoice");
-    if (savedVoice) {
-      // Find the voice that matches the saved value
-      const matchingVoice = voices.find(voice => voice.name === savedVoice);
-      if (matchingVoice) {
-        // Set the voice in the dropdown by matching the option
-        const voiceOption = [...voiceSelect.options].find(option => option.getAttribute("data-name") === savedVoice);
-        if (voiceOption) {
-          voiceOption.selected = true; // Select the matching voice
-        }
+  // Check if voices are already available, if not, wait for them
+  const voices = speechSynthesis.getVoices();
+  
+  if (voices.length === 0) {
+    speechSynthesis.onvoiceschanged = function () {
+      populateVoiceList(); // Recurse when voices are available
+    };
+    return; // Exit the function as voices aren't ready yet
+  }
+
+  // Clear the voiceSelect dropdown before adding new options
+  const voiceSelect = document.getElementById("voiceSelect");
+  voiceSelect.innerHTML = '';
+
+  // Populate the dropdown with the available voices
+  for (let i = 0; i < voices.length; i++) {
+    const option = document.createElement("option");
+    option.textContent = `${voices[i].name} (${voices[i].lang})`;
+    option.setAttribute("data-lang", voices[i].lang);
+    option.setAttribute("data-name", voices[i].name);
+    voiceSelect.appendChild(option);
+  }
+
+  // Optionally, restore the previously selected voice
+  restoreSelectedVoice(voices);
+}
+
+// Function to restore previously selected voice from localStorage
+function restoreSelectedVoice(voices) {
+  const savedVoice = localStorage.getItem("selectedVoice");
+  if (savedVoice) {
+    const matchingVoice = voices.find(voice => voice.name === savedVoice);
+    if (matchingVoice) {
+      const voiceSelect = document.getElementById('voiceSelect');
+      const voiceOption = [...voiceSelect.options].find(option => option.getAttribute("data-name") === savedVoice);
+      if (voiceOption) {
+        voiceOption.selected = true;
       }
     }
   }
+}
 
-  // Wait for the voices to be populated or listen for the onvoiceschanged event
-  if (speechSynthesis.onvoiceschanged !== undefined) {
-    speechSynthesis.onvoiceschanged = function () {
-      populateVoiceList();
-    };
-  } else {
-    // If the voices are already available, populate the dropdown immediately
-    populateVoiceList();
-  }
+// Event listener to save the selected voice to localStorage
+document.getElementById('voiceSelect').addEventListener("change", function () {
+  const selectedVoice = document.getElementById('voiceSelect').selectedOptions[0].getAttribute("data-name");
+  localStorage.setItem("selectedVoice", selectedVoice);
+});
 
-  // Listen for changes to the dropdown and save the selected voice to localStorage
-  voiceSelect.addEventListener("change", function () {
-    const selectedVoice = voiceSelect.options[voiceSelect.selectedIndex].getAttribute("data-name");
-    localStorage.setItem("selectedVoice", selectedVoice);
-  });
+// Call the function when the page loads
+document.addEventListener("DOMContentLoaded", function () {
+  populateVoiceList();
 });
 
 
