@@ -2,6 +2,8 @@ document.getElementById("listenBtn").addEventListener("click", function(event){
   event.preventDefault()
 });
 
+
+
 class Validator {
   /*
     * Determines whether the channel name is valid
@@ -79,27 +81,39 @@ class TTS {
     }    
   }
 
-  speak(message, tags, type, announceflag) {
-    if(type == 'browser') {
-      if(announceflag == true) {
-        var chatter = tags['display-name']; 
-        message = chatter+" says "+message;
-      }
-      const utterance = new SpeechSynthesisUtterance(message);
-      utterance.volume = document.querySelector('#volume').value;
-
-      const voices = speechSynthesis.getVoices();
-      var voiceSelect = document.getElementById('voiceSelect');
-      const selectedOption = voiceSelect.selectedOptions[0].getAttribute("data-name");
-      for (let i = 0; i < voices.length; i++) {
-        if (voices[i].name === selectedOption) {
-          utterance.voice = voices[i];
-        }
-      }
-
-      window.speechSynthesis.speak(utterance);
+function speak(message, tags, type, announceflag) {
+  if (type == 'browser') {
+    if (announceflag == true) {
+      var chatter = tags['display-name'];
+      message = chatter + " says " + message;
     }
+
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.volume = document.querySelector('#volume').value;
+
+    // Get the voices after they are loaded
+    const voices = speechSynthesis.getVoices();
+    if (voices.length === 0) {
+      // Voices aren't loaded yet, wait for the event and then call speak again
+      speechSynthesis.onvoiceschanged = function () {
+        speak(message, tags, type, announceflag); // Recurse to try again once voices are loaded
+      };
+      return; // Stop further execution
+    }
+
+    var voiceSelect = document.getElementById('voiceSelect');
+    const selectedOption = voiceSelect.selectedOptions[0].getAttribute("data-name");
+
+    for (let i = 0; i < voices.length; i++) {
+      if (voices[i].name === selectedOption) {
+        utterance.voice = voices[i];
+      }
+    }
+
+    window.speechSynthesis.speak(utterance);
   }
+}
+
   /*
     * write a message to the browser
     * param message is the tmi.js twitch message
@@ -164,64 +178,58 @@ function manageOptions(tags, message) {
   const badges = tags.badges || {};
   const isBroadcaster = badges.broadcaster;
   const isMod = badges.moderator;
-  let words = message.split(/\s+/); // Split message into words
-  let filteredWords = words.filter(word => !/^https?:\/\//i.test(word)); // Remove words that are links
-  let cleanMessage = filteredWords.join(' '); // Reconstruct the message
 
   const excludedchatterstextarea = document.getElementById('excluded-chatters');
   var lines = excludedchatterstextarea.value.split('\n');
-  var lines = lines.map(line => line.toLowerCase());
+  lines = lines.map(line => line.toLowerCase()); // Ensure all names are lowercase
 
-  if(document.getElementById('modsonly').checked) {
-    if(isBroadcaster || isMod ) {
-      if (message.startsWith('!')) {
-    return; // Ignore messages that start with '!'
-}
-
-	else{
-	if (cleanMessage.trim().length === 0) {
-		return; // Don't log the message if it only contains a link
-	}
-	new TTS(cleanMessage, tags);
-	return;
+  // Skip messages starting with "!" if the checkbox is checked
+  if(document.getElementById('skipcommand').checked && message.startsWith("!")) {
+    return;
   }
+
+  // Handle skipping links
+  if(document.getElementById('skiplinks').checked) {
+    let words = message.split(/\s+/); // Split message into words
+    let filteredWords = words.filter(word => !/^https?:\/\//i.test(word)); // Remove words that are links
+    let cleanMessage = filteredWords.join(' '); // Reconstruct the message without links
+
+    // If the message only contains a link, don't send to TTS
+    if (cleanMessage.trim().length === 0) {
+      return; // Don't log the message if it only contains a link
+    }
+
+    // Send the cleaned message to TTS
+    new TTS(cleanMessage, tags);
+    return; // Exit the function here to avoid sending the original message again
+  }
+
+  // Handle mod-only messages
+  if(document.getElementById('modsonly').checked) {
+    if(isBroadcaster || isMod) {
+      new TTS(message, tags);
       return;
     }
   }
+
+  // Handle excluding certain chatters
   if(document.getElementById('exclude-toggle').checked) {
     console.log(lines);
+
+    // If the chatter's name is in the exclusion list, skip sending the message
     if(lines.includes(tags['display-name'].toLowerCase())) {
       return;
-    }
-    else {
-      if (message.startsWith('!')) {
-    return; // Ignore messages that start with '!'
-}
-
-	else{
-	if (cleanMessage.trim().length === 0) {
-		return; // Don't log the message if it only contains a link
-	}
-	new TTS(cleanMessage, tags);
-	return;
-  }
+    } else {
+      new TTS(message, tags);
       console.log('not in lines');
       return;
     }
   }
-//SERSH EDITS
-if (message.startsWith('!')) {
-    return; // Ignore messages that start with '!'
+
+  // If none of the above conditions are met, send the original message to TTS
+  new TTS(message, tags); 
 }
 
-else{
-if (cleanMessage.trim().length === 0) {
-    return; // Don't log the message if it only contains a link
-}
-new TTS(cleanMessage, tags);
-return;
-  }
- }
 
 
 /*
@@ -239,6 +247,9 @@ function valueCheck() {
   tipHandler.valueCheck(); 
 }
 
+
+
+
 function populateVoiceList() {
   if (typeof speechSynthesis === "undefined") {
     return;
@@ -253,6 +264,7 @@ function populateVoiceList() {
     document.getElementById("voiceSelect").appendChild(option);
   }
 }
+
 
 function exportSettings() {
   var channelName = document.querySelector("#channelname").value;
@@ -303,11 +315,3 @@ document.getElementById("exclude-toggle").addEventListener("change", function() 
     options.classList.add('d-none');
   }
 });
-
-/*
-  Fills in the excluded chatters list with a predefined list of known moderation bots
-*/
-function fillInBots() {
-  var excludedChatters = document.getElementById("excluded-chatters");
-  excludedChatters.value = "Nightbot\nMoobot\nStreamElements\nStreamlabs\nFossabot";
-}
