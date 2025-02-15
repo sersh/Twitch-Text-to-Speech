@@ -2,8 +2,6 @@ document.getElementById("listenBtn").addEventListener("click", function(event){
   event.preventDefault()
 });
 
-
-
 class Validator {
   /*
     * Determines whether the channel name is valid
@@ -81,39 +79,27 @@ class TTS {
     }    
   }
 
-function speak(message, tags, type, announceflag) {
-  if (type == 'browser') {
-    if (announceflag == true) {
-      var chatter = tags['display-name'];
-      message = chatter + " says " + message;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(message);
-    utterance.volume = document.querySelector('#volume').value;
-
-    // Get the voices after they are loaded
-    const voices = speechSynthesis.getVoices();
-    if (voices.length === 0) {
-      // Voices aren't loaded yet, wait for the event and then call speak again
-      speechSynthesis.onvoiceschanged = function () {
-        speak(message, tags, type, announceflag); // Recurse to try again once voices are loaded
-      };
-      return; // Stop further execution
-    }
-
-    var voiceSelect = document.getElementById('voiceSelect');
-    const selectedOption = voiceSelect.selectedOptions[0].getAttribute("data-name");
-
-    for (let i = 0; i < voices.length; i++) {
-      if (voices[i].name === selectedOption) {
-        utterance.voice = voices[i];
+  speak(message, tags, type, announceflag) {
+    if(type == 'browser') {
+      if(announceflag == true) {
+        var chatter = tags['display-name']; 
+        message = chatter+" says "+message;
       }
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.volume = document.querySelector('#volume').value;
+
+      const voices = speechSynthesis.getVoices();
+      var voiceSelect = document.getElementById('voiceSelect');
+      const selectedOption = voiceSelect.selectedOptions[0].getAttribute("data-name");
+      for (let i = 0; i < voices.length; i++) {
+        if (voices[i].name === selectedOption) {
+          utterance.voice = voices[i];
+        }
+      }
+
+      window.speechSynthesis.speak(utterance);
     }
-
-    window.speechSynthesis.speak(utterance);
   }
-}
-
   /*
     * write a message to the browser
     * param message is the tmi.js twitch message
@@ -247,9 +233,7 @@ function valueCheck() {
   tipHandler.valueCheck(); 
 }
 
-
-
-
+/*
 function populateVoiceList() {
   if (typeof speechSynthesis === "undefined") {
     return;
@@ -264,6 +248,7 @@ function populateVoiceList() {
     document.getElementById("voiceSelect").appendChild(option);
   }
 }
+*/
 
 
 function exportSettings() {
@@ -315,3 +300,6 @@ document.getElementById("exclude-toggle").addEventListener("change", function() 
     options.classList.add('d-none');
   }
 });
+
+
+
