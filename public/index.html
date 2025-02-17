@@ -41,8 +41,6 @@
 
     gtag('config', 'G-JT0GEBW5MK');
   </script>
-  
-  
 
 </head>
 
@@ -108,45 +106,23 @@
                 <input id="announcechatter" type="checkbox" />
               </div>
             </div>   
-<div class="row">
-    <div class="col-6">
-        <label for="exclude-toggle"><small>Exclude Certain Chatters</small></label>
-    </div>
-    <div class="col-6">
-        <input id="exclude-toggle" type="checkbox" />
-    </div>
-</div>    
-
-<div class="row d-none" id="exclude-options">
-    <div class="col-6">
-        <small>Please enter the chatters you would like to exclude in the box on the right, making a new line for each chatter.</small>
-        <button class="btn btn-outline-primary" onclick="fillInBots()">Add Known Bots</button>
-    </div>
-    <div class="col-6">
-        <textarea id="excluded-chatters" rows="10" class="form-control" ></textarea>
-    </div>
-</div>  
-
-<div class="row">
-  <div class="col-6">
-	<label for="skipcommand"><small>Skip Messages Starting With !</small></label>
-  </div>
-  <div class="col-6">
-	<input id="skipcommand" type="checkbox" />
-  </div>
-</div>  
-
-<div class="row">
-  <div class="col-6">
-	<label for="skiplinks"><small>Remove Links From Messages</small></label>
-  </div>
-  <div class="col-6">
-	<input id="skiplinks" type="checkbox" />
-  </div>
-</div>  
-
- <script src="script.js"></script>
-			
+            <div class="row">
+              <div class="col-6">
+                <label for="exclude"><small>Exclude Certain Chatters</small></label>
+              </div>
+              <div class="col-6">
+                <input id="exclude-toggle" type="checkbox" />
+              </div>
+            </div>    
+            <div class="row d-none" id="exclude-options">
+              <div class="col-6">
+                <small>Please enter the chatters you would like to exclude in the box on the right, making a new line for each chatter.</small>
+                <button class="btn btn-outline-primary" onclick="fillInBots()">Start with Known Bots</button>
+              </div>
+              <div class="col-6">
+                <textarea id="excluded-chatters" rows="10" class="form-control" placeholder="XQC&#10;BagofChaos"></textarea>
+              </div>
+            </div>                    
             <div class="row">
               <button class="btn btn-dark mt-3 ml-2" data-toggle="modal" data-target="#settingsModal" onclick="exportSettings()">Export Channel to URL</button>
             </div>
