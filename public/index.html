@@ -98,6 +98,14 @@
                 <input id="modsonly" type="checkbox" />
               </div>
             </div>
+			 <div class="row">
+              <div class="col-6">
+                <label for="subsonly"><small>Limit TTS to Subscribers Only</small></label>
+              </div>
+              <div class="col-5">
+                <input id="subsonly" type="checkbox" />
+              </div>
+            </div>
             <div class="row">
               <div class="col-6">
                 <label for="announcechatter"><small>Announce Chatter's Name Before Message</small></label>
@@ -130,7 +138,15 @@
               <div class="col-6">
                 <input id="nocommands" type="checkbox" />
               </div>
-            </div>                    
+            </div>           
+            <div class="row">
+              <div class="col-6">
+                <label for="removelinks"><small>Remove Links</small></label>
+              </div>
+              <div class="col-6">
+                <input id="removelinks" type="checkbox" />
+              </div>
+            </div>   			
             <div class="row">
               <button class="btn btn-dark mt-3 ml-2" data-toggle="modal" data-target="#settingsModal" onclick="exportSettings()">Export Channel to URL</button>
             </div>
