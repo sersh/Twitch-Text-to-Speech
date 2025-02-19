@@ -11,10 +11,6 @@ class Validator {
     var res = string.match(/^(#)?[a-zA-Z0-9_]{4,25}$/); 
     return (res !== null)
   }
-  isLink(string) { 
-    var LINK_DETECTION_REGEX = string.match(/(([a-z]+:\/\/)?(([a-z0-9\-]+\.)+([a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|local|internal))(:[0-9]{1,5})?(\/[a-z0-9_\-\.~]+)*(\/([a-z0-9_\-\.]*)(\?[a-z0-9+_\-\.%=&amp;]*)?)?(#[a-zA-Z0-9!$&'()*+.=-_~:@/?]*)?)(\s+|$)/gi);
-    return (LINK_DETECTION_REGEX !== null)
-  }
 }
 
 
@@ -131,37 +127,72 @@ function manageOptions(tags, message) {
   const badges = tags.badges || {};
   const isBroadcaster = badges.broadcaster;
   const isMod = badges.moderator;
+  const isSub = badges.subscriber;
 
   const excludedchatterstextarea = document.getElementById('excluded-chatters');
   var lines = excludedchatterstextarea.value.split('\n');
   var lines = lines.map(line => line.toLowerCase());
-  if(validator.isLink(message) == true) { 
+ /*
+ if(validator.isLink(message) == true) { 
     return; 
   }
-  if(document.getElementById('nocommands').checked && message.startsWith("!")) {
+  */
+
+// Function to remove links from messages while keeping the rest intact
+function removeLinks(message) {
+  return message.replace(/https?:\/\/\S+/gi, "").trim(); // Remove links and trim spaces
+}
+
+// First, check if the 'exclude-toggle' checkbox is checked
+if (document.getElementById('exclude-toggle').checked) {
+  console.log(lines);
+  if (lines.includes(tags['display-name'].toLowerCase())) {
+    return; // If the name is in the exclude list, exit immediately
+  }
+}
+
+// Then, check if 'nocommands' is checked and the message starts with "!"
+if (document.getElementById('nocommands').checked && message.startsWith("!")) {
+  return; // If 'nocommands' is checked and the message starts with "!", do nothing
+}
+
+// If 'removelinks' is checked, remove only the links from the message
+if (document.getElementById('removelinks').checked) {
+  message = removeLinks(message);
+  
+  // If the message is empty after link removal, stop processing
+  if (message === "") {
     return;
   }
-  if(document.getElementById('modsonly').checked) {
-    if(isBroadcaster || isMod ) {
-      new TTS(message, tags);
-      return;
-    }
-  }
-  if(document.getElementById('exclude-toggle').checked) {
-    console.log(lines);
-    if(lines.includes(tags['display-name'].toLowerCase())) {
-      return;
-    }
-    else {
-      new TTS(message, tags);
-      console.log('not in lines');
-      return;
-    }
-  }
-  else {
-    new TTS(message, tags); 
+}
+
+// Check if the 'modsonly' checkbox is checked
+if (document.getElementById('modsonly').checked) {
+  if (isBroadcaster || isMod) {
+    new TTS(message, tags);
+    return;
+  } else {
     return;
   }
+}
+
+// Check if the 'subsonly' checkbox is checked
+if (document.getElementById('subsonly').checked) {
+  if (isBroadcaster || isSub) {
+    new TTS(message, tags);
+    return;
+  } else {
+    return;
+  }
+}
+
+// If none of the above conditions blocked it, allow TTS
+new TTS(message, tags);
+
+
+
+
+
 }
 
 function populateVoiceList() {
