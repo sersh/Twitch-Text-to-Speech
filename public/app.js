@@ -128,6 +128,7 @@ function manageOptions(tags, message) {
   const isBroadcaster = badges.broadcaster;
   const isMod = badges.moderator;
   const isSub = badges.subscriber;
+  const isFounder = badges.founder;
 
   const excludedchatterstextarea = document.getElementById('excluded-chatters');
   var lines = excludedchatterstextarea.value.split('\n');
@@ -178,7 +179,7 @@ if (document.getElementById('modsonly').checked) {
 
 // Check if the 'subsonly' checkbox is checked
 if (document.getElementById('subsonly').checked) {
-  if (isBroadcaster || isSub) {
+  if (isBroadcaster || isSub || isFounder) {
     new TTS(message, tags);
     return;
   } else {
